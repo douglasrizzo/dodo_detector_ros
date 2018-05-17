@@ -1,53 +1,38 @@
 #!/usr/bin/env python
 
 import rospy
-from sensor_msgs.msg import Image
+import message_filters
+
+from sensor_msgs.msg import Image, PointCloud2
 from cv_bridge import CvBridge, CvBridgeError
 from dodo_detector import KeypointObjectDetector, ObjectDetector, SSDObjectDetector
-from openni import Context, DepthGenerator
 
 class object_detection:
 
     def __init__(self):
+        # TODO: planejar como a localização desses arquivos será passada
         frozen_graph, label_map, num_classes
         self.detector = SSDObjectDetector.SSDObjectDetector(frozen_graph, label_map, num_classes)
 
+        # the following subscribers should come from the same Kinect
+        # subscriber for Image messages
+        image_sub = message_filters.Subscriber('/camera/rgb/image_color', Image)
+        # subscriber for PointCloud2
+        pc_sub = message_filters.Subscriber('/camera/depth_registered/points', PointCloud2)
 
-        ctx = pyopenni.Context()
-        ctx.init()
-
-        # Create a depth generator
-        depth = pyopenni.DepthGenerator()
-        depth.create(ctx)
-
-        # Set it to VGA maps at 30 FPS
-        depth.set_resolution_preset(RES_VGA)
-        depth.fps = 30
-
-        # Start generating
-        ctx.start_generating_all()
-
-        rospy.Subscriber('/camera/rgb/image_color', Image, self.callback, queue_size=1)
+        # synchronize them both into a single callback
+        ts = message_filters.TimeSynchronizer([image_sub, pc_sub], 10)
+        ts.registerCallback(callback)
 
 
-    def callback(self, data):
+    def callback(self, image, pointcloud):
         try:
             # capture image from the subscriber and convert to an OpenCV image
-            scene = self.bridge.imgmsg_to_cv2(data, "rgb8")
+            scene = self.bridge.imgmsg_to_cv2(image, "rgb8")
         except CvBridgeError as e:
             print(e)
 
         marked_image, objects = self.detector.from_image(scene)
 
-        # Update to next frame
-        nRetVal = ctx.wait_one_update_all(depth)
-        depthMap = depth.map
-
-        # Get the coordinates of the middle pixel
-        x = depthMap.width / 2
-        y = depthMap.height / 2
-        
-        # Get the pixel at these coordinates
-        pixel = depthMap[x,y]
-
-        print "The middle pixel is %d millimeters away." % pixel
+        # TODO: JEFF!!!
+        # objetos detectados na imagem, agora usamos a mensagem de pointcloud para fazer o tal vetor que Fafá pediu

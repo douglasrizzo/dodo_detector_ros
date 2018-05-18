@@ -8,7 +8,13 @@ project(dodo_detector_ros)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  rospy
+    rospy
+    std_msgs
+    sensor_msgs
+    message_generation
+    cv_bridge
+    geometry_msgs
+    message_filters
 )
 
 ## System dependencies are found with CMake's conventions

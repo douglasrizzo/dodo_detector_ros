@@ -3,15 +3,20 @@
 import rospy
 import message_filters
 
-from sensor_msgs.msg import Image, PointCloud2
 from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.msg import Image, PointCloud2
+from dodo_detector_ros import DetectedObject, DetectedObjectArray
 from dodo_detector import KeypointObjectDetector, ObjectDetector, SSDObjectDetector
 
 class object_detection:
 
     def __init__(self):
         # TODO: planejar como a localização desses arquivos será passada
-        frozen_graph, label_map, num_classes
+        frozen_graph, label_map
+        
+        label_map_contents  = open(label_map, 'r').read()
+        num_classes = label_map_contents.count('name:')
+
         self.detector = SSDObjectDetector.SSDObjectDetector(frozen_graph, label_map, num_classes)
 
         # the following subscribers should come from the same Kinect
@@ -24,6 +29,9 @@ class object_detection:
         ts = message_filters.TimeSynchronizer([image_sub, pc_sub], 10)
         ts.registerCallback(callback)
 
+        self._pub = rospy.Publisher('detected_objects', DetectedObjectArray, queue_size=10)
+
+
 
     def callback(self, image, pointcloud):
         try:
@@ -33,6 +41,11 @@ class object_detection:
             print(e)
 
         marked_image, objects = self.detector.from_image(scene)
+        msg_to_send = DetectedObjectArray()
 
-        # TODO: JEFF!!!
-        # objetos detectados na imagem, agora usamos a mensagem de pointcloud para fazer o tal vetor que Fafá pediu
+        for obj in objects:
+            mini_msg = DetectedObject()
+            mini_msg.type = obj[0]
+            msg_to_send.append()
+
+        self._pub.publish(msg_to_send)

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="inference_graph" default="" />
+    <arg name="label_map" default="" />
+    <node>
+        <param name="inference_graph" type="string" value="$(arg inference_graph)" />
+        <param name="label_map" type="string" value="$(arg label_map)"/>
+    </node>
+</launch>

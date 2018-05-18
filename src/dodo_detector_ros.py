@@ -8,13 +8,20 @@ from sensor_msgs.msg import Image, PointCloud2
 from dodo_detector_ros import DetectedObject, DetectedObjectArray
 from dodo_detector import KeypointObjectDetector, ObjectDetector, SSDObjectDetector
 
+
 class object_detection:
 
     def __init__(self):
         # TODO: planejar como a localização desses arquivos será passada
-        frozen_graph, label_map
-        
-        label_map_contents  = open(label_map, 'r').read()
+        frozen_graph = rospy.get_param("/dodo_detector_ros/inference_graph")
+        label_map = rospy.get_param("/dodo_detector_ros/label_map")
+
+        if frozen_graph is None:
+            raise ValueError('Parameter \'frozen_graph\' must be passed')
+        if label_map is None:
+            raise ValueError('Parameter \'label_map\' must be passed')
+
+        label_map_contents = open(label_map, 'r').read()
         num_classes = label_map_contents.count('name:')
 
         self.detector = SSDObjectDetector.SSDObjectDetector(frozen_graph, label_map, num_classes)
@@ -30,8 +37,6 @@ class object_detection:
         ts.registerCallback(callback)
 
         self._pub = rospy.Publisher('detected_objects', DetectedObjectArray, queue_size=10)
-
-
 
     def callback(self, image, pointcloud):
         try:

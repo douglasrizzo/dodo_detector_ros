@@ -1,2 +1,2 @@
 Header header
-DetectedObject[] detected_objects
+dodo_detector_ros/DetectedObject[] detected_objects

@@ -104,10 +104,14 @@ class Detector:
 
                         # else we could try and use the depth map...
                         elif self._current_depth is not None:
+                            rospy.logwarn('Point cloud not found, using depth map to find object.')
                             depth = self.bridge.imgmsg_to_cv2(self._current_depth, "passthrough")
                             mini_msg.location.x = x_center
                             mini_msg.location.y = y_center
                             mini_msg.location.z = depth[x_center, y_center]
+
+                        else:
+                            rospy.logwarn('No 3D information available to position object in scene')
 
                         msg_to_send.detected_objects.append(mini_msg)
 

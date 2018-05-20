@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
 <launch>
+	<include file="$(find freenect_launch)/launch/examples/freenect-registered-xyzrgb.launch" />
+
     <arg name="inference_graph" default="" />
     <arg name="label_map" default="" />
-    <node>
+    <node name="dodo_detector_ros" pkg="dodo_detector_ros" type="detector.py" output="screen">
         <param name="inference_graph" type="string" value="$(arg inference_graph)" />
         <param name="label_map" type="string" value="$(arg label_map)"/>
     </node>

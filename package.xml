@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package format="2">
+<package>
   <name>dodo_detector_ros</name>
   <version>0.0.1</version>
   <description>The dodo_detector_ros package</description>
@@ -47,22 +47,23 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
 
+  <build_depend>rospy</build_depend>
   <build_depend>cv_bridge</build_depend>
-  <build_depend>geometry_msgs</build_depend>
   <build_depend>message_filters</build_depend>
   <build_depend>message_generation</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_export_depend>message_generation</build_export_depend>
-  <build_export_depend>rospy</build_export_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  
   <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>rospy</exec_depend>
-  <run_depend>cv_bridge</run_depend>
-  <run_depend>geometry_msgs</run_depend>
+  
+  
   <run_depend>rospy</run_depend>
-  <run_depend>sensor_msgs</run_depend>
+  <run_depend>cv_bridge</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

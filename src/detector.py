@@ -7,7 +7,7 @@ import message_filters
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, PointCloud2
 from dodo_detector_ros.msg import DetectedObject, DetectedObjectArray
-from dodo_detector import KeypointObjectDetector, ObjectDetector, SSDObjectDetector
+from dodo_detector.detection import SingleShotDetector
 
 
 class Detector:
@@ -31,7 +31,7 @@ class Detector:
         rospy.loginfo('Number of classes: ' + num_classes)
 
         # create detector
-        self.detector = SSDObjectDetector.SSDObjectDetector(frozen_graph, label_map, num_classes)
+        self.detector = SingleShotDetector(frozen_graph, label_map, num_classes)
         self.bridge = CvBridge()
 
         # image, depth and point cloud subscribers

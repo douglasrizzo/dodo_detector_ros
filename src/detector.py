@@ -3,6 +3,7 @@
 
 import rospy
 import message_filters
+import tf
 
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs import point_cloud2 as pc2
@@ -46,6 +47,8 @@ class Detector:
         self._imagepub = rospy.Publisher('detected_objects_image', Image, queue_size=10)
         #  publisher for object locations
         self._pub = rospy.Publisher('detected_objects', DetectedObjectArray, queue_size=10)
+        
+        self._tfpub = tf.TransformBroadcaster()
 
     def image_callback(self, image):
         """Image callback"""
@@ -75,7 +78,7 @@ class Detector:
                 # iterate over the dictionary of detected objects
                 for obj_class in objects.iterkeys():
                     rospy.logdebug("Found " + str(len(objects[obj_class])) + " object(s) of type " + obj_class)
-                    for coordinates in objects[obj_class]:
+                    for obj_type_index, coordinates in enumerate(objects[obj_class]):
                         ymin, xmin, ymax, xmax = coordinates
                         y_center = ymax - ((ymax - ymin) / 2)
                         x_center = xmax - ((xmax - xmin) / 2)
@@ -86,21 +89,30 @@ class Detector:
                         # TODO the timestamp of image, depth and point cloud should be checked
                         # to make sure we are using synchronized data...
 
+                        if self._current_pc is None:
+                            rospy.logwarn('No point cloud information available to track object in scene')
+
                         # if we have a point cloud, we'll try and find
                         # the location of the object in space using it
-                        if self._current_pc is not None:
+                        else:
                             # this function gives us a generator of points.
                             # we ask for a single point in the center of our object.
-                            pc_gen = pc2.read_points(self._current_pc,
+                            pc_list = list(pc2.read_points(self._current_pc,
                                 skip_nans=True,
                                 field_names = ("x", "y", "z"),
-                                uvs=[(x_center, y_center)])
+                                uvs=[(x_center, y_center)]))
 
-                            # this is the location of our object in space
-                            detected_object.location.x, detected_object.location.y, detected_object.location.z = pc_gen.next()
+                            if len(pc_list) > 0:
+                                # this is the location of our object in space
+                                detected_object.location.x, detected_object.location.y, detected_object.location.z = pc_list[0]
 
-                        else:
-                            rospy.logwarn('No point cloud information available to track object in scene')
+                                self._tfpub.sendTransform((detected_object.location.x,
+                                                           detected_object.location.y,
+                                                           detected_object.location.z),
+                                                        tf.transformations.quaternion_from_euler(0, 0, 0),
+                                                        rospy.Time.now(),
+                                                        obj_class + "_" + str(obj_type_index),
+                                                        "kinect")
 
                         msg.detected_objects.append(detected_object)
 

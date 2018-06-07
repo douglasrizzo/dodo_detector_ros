@@ -8,8 +8,8 @@ import tf
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs import point_cloud2 as pc2
 from sensor_msgs.msg import Image, PointCloud2
-from dodo_detector_ros.msg import DetectedObject, DetectedObjectArray
 from dodo_detector.detection import SingleShotDetector
+from dodo_detector_ros.msg import DetectedObject, DetectedObjectArray
 
 
 class Detector:
@@ -114,7 +114,8 @@ class Detector:
                                                         obj_class + "_" + str(obj_type_index),
                                                         "kinect")
 
-                        msg.detected_objects.append(detected_object)
+                        rospy.logdebug("Added object to DetectedObjectArray")
+                        msg_to_send.detected_objects.append(mini_msg)
 
                 self._pub.publish(msg)
 
@@ -122,6 +123,5 @@ if __name__ == '__main__':
     rospy.init_node('dodo_detector_ros', log_level=rospy.INFO)
     try:
         Detector().run()
-        # rospy.spin()
     except KeyboardInterrupt:
         rospy.loginfo('Shutting down')

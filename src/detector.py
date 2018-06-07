@@ -28,19 +28,17 @@ class Detector:
         # count number of classes from label map
         label_map_contents = open(label_map, 'r').read()
         num_classes = label_map_contents.count('name:')
-        rospy.loginfo('Number of classes: ' + num_classes)
+        rospy.loginfo('Number of classes: ' + str(num_classes))
 
         # create detector
         self.detector = SingleShotDetector(frozen_graph, label_map, num_classes)
         self.bridge = CvBridge()
 
-        # image, depth and point cloud subscribers
+        # image and point cloud subscribers
         # and variables that will hold their values
         rospy.Subscriber('/camera/rgb/image_color', Image, self.image_callback)
-        rospy.Subscriber('/camera/depth_registered/image', Image, self.depth_callback)
         rospy.Subscriber('/camera/depth_registered/points', PointCloud2, self.pc_callback)
         self._current_image = None
-        self._current_depth = None
         self._current_pc = None
 
         # publisher for frames with detected objects
@@ -80,6 +78,7 @@ class Detector:
 
                 # iterate over the dictionary of detected objects
                 for obj_class in objects.iterkeys():
+                    rospy.logdebug("Found " + str(len(objects[obj_class])) + " object(s) of type " + obj_class)
                     for coordinates in objects[obj_class]:
                         ymin, xmin, ymax, xmax = coordinates
                         y_center = ymax - ((ymax - ymin) / 2)
@@ -119,8 +118,8 @@ class Detector:
 
 if __name__ == '__main__':
     rospy.init_node('dodo_detector_ros', log_level=rospy.INFO)
-    Detector().run()
     try:
-        rospy.spin()
+        Detector().run()
+        # rospy.spin()
     except KeyboardInterrupt:
         rospy.loginfo('Shutting down')

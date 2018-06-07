@@ -5,6 +5,7 @@ import rospy
 import message_filters
 
 from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs import point_cloud2 as pc2
 from sensor_msgs.msg import Image, PointCloud2
 from dodo_detector_ros.msg import DetectedObject, DetectedObjectArray
 from dodo_detector.detection import SingleShotDetector
@@ -51,11 +52,6 @@ class Detector:
         # Store value on a private attribute
         self._current_image = image
 
-    def depth_callback(self, depth):
-        """Depth map callback"""
-        # Store value on a private attribute
-        self._current_depth = depth
-
     def pc_callback(self, pc):
         """Point cloud callback"""
         # Store value on a private attribute
@@ -74,7 +70,7 @@ class Detector:
                 except CvBridgeError as e:
                     print(e)
 
-                msg_to_send = DetectedObjectArray()
+                msg = DetectedObjectArray()
 
                 # iterate over the dictionary of detected objects
                 for obj_class in objects.iterkeys():
@@ -84,8 +80,8 @@ class Detector:
                         y_center = ymax - ((ymax - ymin) / 2)
                         x_center = xmax - ((xmax - xmin) / 2)
 
-                        mini_msg = DetectedObject()
-                        mini_msg.type.data = obj_class
+                        detected_object = DetectedObject()
+                        detected_object.type.data = obj_class
 
                         # TODO the timestamp of image, depth and point cloud should be checked
                         # to make sure we are using synchronized data...
@@ -93,28 +89,22 @@ class Detector:
                         # if we have a point cloud, we'll try and find
                         # the location of the object in space using it
                         if self._current_pc is not None:
-                            # TODO this is here for debug purposes, should be deleted later
-                            # actual code is missing too
-                            rospy.loginfo(self._current_pc.height)
-                            rospy.loginfo(self._current_pc.width)
-                            rospy.loginfo(self._current_pc.point_step)
-                            rospy.loginfo(self._current_pc.row_step)
-                            rospy.loginfo(self._current_pc.is_dense)
+                            # this function gives us a generator of points.
+                            # we ask for a single point in the center of our object.
+                            pc_gen = pc2.read_points(self._current_pc,
+                                skip_nans=True,
+                                field_names = ("x", "y", "z"),
+                                uvs=[(x_center, y_center)])
 
-                        # else we could try and use the depth map...
-                        elif self._current_depth is not None:
-                            rospy.logwarn('Point cloud not found, using depth map to find object.')
-                            depth = self.bridge.imgmsg_to_cv2(self._current_depth, "passthrough")
-                            mini_msg.location.x = x_center
-                            mini_msg.location.y = y_center
-                            mini_msg.location.z = depth[x_center, y_center]
+                            # this is the location of our object in space
+                            detected_object.location.x, detected_object.location.y, detected_object.location.z = pc_gen.next()
 
                         else:
-                            rospy.logwarn('No 3D information available to position object in scene')
+                            rospy.logwarn('No point cloud information available to track object in scene')
 
-                        msg_to_send.detected_objects.append(mini_msg)
+                        msg.detected_objects.append(detected_object)
 
-                self._pub.publish(msg_to_send)
+                self._pub.publish(msg)
 
 if __name__ == '__main__':
     rospy.init_node('dodo_detector_ros', log_level=rospy.INFO)

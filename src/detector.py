@@ -76,9 +76,12 @@ class Detector:
                 msg = DetectedObjectArray()
 
                 # iterate over the dictionary of detected objects
-                for obj_class in objects.iterkeys():
+                for obj_class in objects:
                     rospy.logdebug("Found " + str(len(objects[obj_class])) + " object(s) of type " + obj_class)
+
                     for obj_type_index, coordinates in enumerate(objects[obj_class]):
+                        rospy.logdebug("..." + obj_class + " " + str(obj_type_index) + " at " + str(coordinates))
+                        
                         ymin, xmin, ymax, xmax = coordinates
                         y_center = ymax - ((ymax - ymin) / 2)
                         x_center = xmax - ((xmax - xmin) / 2)
@@ -106,21 +109,20 @@ class Detector:
                                 # this is the location of our object in space
                                 detected_object.location.x, detected_object.location.y, detected_object.location.z = pc_list[0]
 
-                                self._tfpub.sendTransform((detected_object.location.x,
-                                                           detected_object.location.y,
-                                                           detected_object.location.z),
+                                self._tfpub.sendTransform((detected_object.location.z,
+                                                           -detected_object.location.y,
+                                                           detected_object.location.x),
                                                         tf.transformations.quaternion_from_euler(0, 0, 0),
                                                         rospy.Time.now(),
                                                         obj_class + "_" + str(obj_type_index),
-                                                        "kinect")
+                                                        "camera_link")
 
-                        rospy.logdebug("Added object to DetectedObjectArray")
-                        msg_to_send.detected_objects.append(mini_msg)
+                        msg.detected_objects.append(detected_object)
 
                 self._pub.publish(msg)
 
 if __name__ == '__main__':
-    rospy.init_node('dodo_detector_ros', log_level=rospy.INFO)
+    rospy.init_node('dodo_detector_ros', log_level=rospy.DEBUG)
     try:
         Detector().run()
     except KeyboardInterrupt:

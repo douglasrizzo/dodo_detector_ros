@@ -32,7 +32,7 @@ class Detector:
         rospy.loginfo('Number of classes: ' + str(num_classes))
 
         # create detector
-        self.detector = SingleShotDetector(frozen_graph, label_map, num_classes)
+        self.detector = SingleShotDetector(frozen_graph, label_map, confidence=.5)
         self.bridge = CvBridge()
 
         # image and point cloud subscribers

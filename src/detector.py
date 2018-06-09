@@ -4,10 +4,11 @@
 import rospy
 import tf
 
+from os.path import expanduser
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs import point_cloud2 as pc2
 from sensor_msgs.msg import Image, PointCloud2
-from dodo_detector.detection import SingleShotDetector
+from dodo_detector.detection import SingleShotDetector, KeypointObjectDetector
 from dodo_detector_ros.msg import DetectedObject, DetectedObjectArray
 
 
@@ -15,24 +16,52 @@ class Detector:
 
     def __init__(self):
         #  get label map and inference graph from params
-        frozen_graph = rospy.get_param("/dodo_detector_ros/inference_graph")
-        label_map = rospy.get_param("/dodo_detector_ros/label_map")
+        detector_type = rospy.get_param("/dodo_detector_ros/detector_type")
+        frozen_graph = rospy.get_param("/dodo_detector_ros/inference_graph", '')
+        label_map = rospy.get_param("/dodo_detector_ros/label_map", '')
+        confidence = rospy.get_param("/dodo_detector_ros/ssd_confidence", 0.5)
+        min_points = rospy.get_param("/dodo_detector_ros/sift_min_pts", 10)
+        database_path = rospy.get_param("/dodo_detector_ros/sift_database_path", '')
 
-        if frozen_graph is None:
-            raise ValueError('Parameter \'frozen_graph\' must be passed')
-        if label_map is None:
-            raise ValueError('Parameter \'label_map\' must be passed')
+        if detector_type == 'ssd':
+            rospy.loginfo('Chosen detector type: Single Shot Detector')
+            if len(frozen_graph) == 0:
+                raise ValueError('Parameter \'frozen_graph\' must be passed')
+            if len(label_map) == 0:
+                raise ValueError('Parameter \'label_map\' must be passed')
+            if confidence <= 0 or confidence > 1:
+                raise ValueError('Parameter \'confidence\' must be between 0 and 1')                
 
-        rospy.loginfo('Path to inference graph: ' + frozen_graph)
-        rospy.loginfo('Path to label map: ' + label_map)
+            frozen_graph = expanduser(frozen_graph)
+            label_map = expanduser(label_map)
 
-        # count number of classes from label map
-        label_map_contents = open(label_map, 'r').read()
-        num_classes = label_map_contents.count('name:')
-        rospy.loginfo('Number of classes: ' + str(num_classes))
+            self.detector = SingleShotDetector(frozen_graph, label_map, confidence=confidence)
+            rospy.loginfo('Path to inference graph: ' + frozen_graph)
+            rospy.loginfo('Path to label map: ' + label_map)
+
+            # count number of classes from label map
+            label_map_contents = open(label_map, 'r').read()
+            num_classes = label_map_contents.count('name:')
+            rospy.loginfo('Number of classes: ' + str(num_classes))
+
+        elif detector_type in ['sift', 'rootsift']:
+            rospy.loginfo('Chosen detector type: Keypoint Object Detector')
+            if min_points <= 0:
+                raise ValueError('Parameter \'min_points\' must greater than 0')
+            if len(database_path) == 0:
+                raise ValueError('Parameter \'database_path\' must be passed')
+
+            database_path = expanduser(database_path)
+
+            detector_type = 'SIFT' if detector_type == 'sift' else 'RootSIFT'
+            self.detector = KeypointObjectDetector(
+                database_path,
+                detector_type,
+                min_points=min_points)
+            rospy.loginfo('Database path: ' + database_path)
+            rospy.loginfo('Min. points: ' + min_points)
 
         # create detector
-        self.detector = SingleShotDetector(frozen_graph, label_map, confidence=.5)
         self.bridge = CvBridge()
 
         # image and point cloud subscribers
@@ -110,19 +139,19 @@ class Detector:
                                 tf_id = obj_class + "_" + str(obj_type_index)
                                 detected_object.tf_id.data = tf_id
 
+                                point_x, point_y, point_z = pc_list[0]
+
                                 # kinect here is mapped as camera_link
                                 # object tf (x, y, z) must be
                                 # passed as (z,-x,-y)
-
-                                point_x, point_y, point_z = pc_list[0]
-
-                                self._tfpub.sendTransform((point_z,
-                                                           -point_x,
-                                                           -point_y),
-                                                        tf.transformations.quaternion_from_euler(0, 0, 0),
-                                                        rospy.Time.now(),
-                                                        tf_id,
-                                                        "camera_link")
+                                self._tfpub.sendTransform(
+                                        (point_z,
+                                        -point_x,
+                                        -point_y),
+                                    tf.transformations.quaternion_from_euler(0, 0, 0),
+                                    rospy.Time.now(),
+                                    tf_id,
+                                    "camera_link")
 
                         msg.detected_objects.append(detected_object)
 

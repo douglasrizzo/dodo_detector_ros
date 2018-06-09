@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import rospy
-import message_filters
 import tf
 
 from cv_bridge import CvBridge, CvBridgeError
@@ -110,8 +109,8 @@ class Detector:
                                 detected_object.location.x, detected_object.location.y, detected_object.location.z = pc_list[0]
 
                                 self._tfpub.sendTransform((detected_object.location.z,
-                                                           -detected_object.location.y,
-                                                           detected_object.location.x),
+                                                           -detected_object.location.x,
+                                                           -detected_object.location.y),
                                                         tf.transformations.quaternion_from_euler(0, 0, 0),
                                                         rospy.Time.now(),
                                                         obj_class + "_" + str(obj_type_index),

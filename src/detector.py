@@ -99,21 +99,29 @@ class Detector:
                         else:
                             # this function gives us a generator of points.
                             # we ask for a single point in the center of our object.
-                            pc_list = list(pc2.read_points(self._current_pc,
+                            pc_list = list(pc2.read_points(
+                                self._current_pc,
                                 skip_nans=True,
                                 field_names = ("x", "y", "z"),
                                 uvs=[(x_center, y_center)]))
 
                             if len(pc_list) > 0:
                                 # this is the location of our object in space
-                                detected_object.location.x, detected_object.location.y, detected_object.location.z = pc_list[0]
+                                tf_id = obj_class + "_" + str(obj_type_index)
+                                detected_object.tf_id.data = tf_id
 
-                                self._tfpub.sendTransform((detected_object.location.z,
-                                                           -detected_object.location.x,
-                                                           -detected_object.location.y),
+                                # kinect here is mapped as camera_link
+                                # object tf (x, y, z) must be
+                                # passed as (z,-x,-y)
+
+                                point_x, point_y, point_z = pc_list[0]
+
+                                self._tfpub.sendTransform((point_z,
+                                                           -point_x,
+                                                           -point_y),
                                                         tf.transformations.quaternion_from_euler(0, 0, 0),
                                                         rospy.Time.now(),
-                                                        obj_class + "_" + str(obj_type_index),
+                                                        tf_id,
                                                         "camera_link")
 
                         msg.detected_objects.append(detected_object)

@@ -1,2 +1,2 @@
 std_msgs/String type
-geometry_msgs/Vector3 location
+std_msgs/String tf_id

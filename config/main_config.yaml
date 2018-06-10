@@ -8,3 +8,6 @@ label_map: ~/.dodo_detector_ros/mscoco_label_map.pbtxt
 ssd_confidence: 0.5
 sift_min_pts: 10
 sift_database_path: ~/.dodo_detector_ros/sift_database
+
+filters:
+  people: [person]

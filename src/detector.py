@@ -22,10 +22,7 @@ class Detector:
         confidence = rospy.get_param('/dodo_detector_ros/ssd_confidence', 0.5)
         min_points = rospy.get_param('/dodo_detector_ros/sift_min_pts', 10)
         database_path = rospy.get_param('/dodo_detector_ros/sift_database_path', '')
-        self._category_filter = rospy.get_param('/dodo_detector_ros/filter', None)
-
-        if len(self._category_filter) == 0:
-            self._category_filter = None
+        filters = rospy.get_param('/dodo_detector_ros/filters', {})
 
         if detector_type == 'ssd':
             rospy.loginfo('Chosen detector type: Single Shot Detector')
@@ -76,9 +73,20 @@ class Detector:
         self._current_pc = None
 
         # publisher for frames with detected objects
-        self._imagepub = rospy.Publisher('detected_objects_image', Image, queue_size=10)
+        self._imagepub = rospy.Publisher('/dodo_detector_ros/detected_objects_image', Image, queue_size=10)
         #  publisher for object locations
-        self._pub = rospy.Publisher('detected_objects', DetectedObjectArray, queue_size=10)
+        self._pub = rospy.Publisher('dodo_detector_ros/detected', DetectedObjectArray, queue_size=10)
+
+        # this package works with a dynamic list of publishers
+        # there is one default, unfiltered publisher that will publish every object
+        self._publishers = {None: (None, rospy.Publisher('dodo_detector_ros/detected', DetectedObjectArray, queue_size=10))}
+
+        # additionaly, for each filter created in the yaml config file,
+        # a new publisher is created
+        for key in filters:
+            self._publishers[key] = (filters[key],
+                rospy.Publisher('dodo_detector_ros/detected_' + key, DetectedObjectArray, queue_size=10))
+
 
         self._tfpub = tf.TransformBroadcaster()
 
@@ -103,11 +111,10 @@ class Detector:
                     marked_image, objects = self._detector.from_image(scene)  # detect objects
                     self._imagepub.publish(self._bridge.cv2_to_imgmsg(marked_image, 'rgb8'))  # publish detection results
 
-                    for key in objects:
-                        if key not in self._category_filter:
-                            del objects[key]
-
-                    msg = DetectedObjectArray()
+                    # we'll created an empty msg for all publishers
+                    msgs = {}
+                    for key in self._publishers:
+                        msgs[key] = DetectedObjectArray()
 
                     # iterate over the dictionary of detected objects
                     for obj_class in objects:
@@ -159,8 +166,14 @@ class Detector:
                                         tf_id,
                                         'camera_link')
 
-                            msg.detected_objects.append(detected_object)
-                    self._pub.publish(msg)
+                                # add the object to the unfiltered publisher,
+                                # as well as the ones whose filter include this class of objects                            for key in self._publishers:
+                                if key is None or obj_class in self._publishers[key][0]:
+                                    msgs[key].detected_objects.append(detected_object)
+
+                    # publish all the messages in their corresponding publishers
+                    for key in self._publishers:
+                        self._publishers[key][1].publish(msgs[key])
                 except CvBridgeError as e:
                     print(e)
 

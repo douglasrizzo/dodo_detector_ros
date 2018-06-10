@@ -22,6 +22,10 @@ class Detector:
         confidence = rospy.get_param('/dodo_detector_ros/ssd_confidence', 0.5)
         min_points = rospy.get_param('/dodo_detector_ros/sift_min_pts', 10)
         database_path = rospy.get_param('/dodo_detector_ros/sift_database_path', '')
+        self._category_filter = rospy.get_param('/dodo_detector_ros/filter', None)
+
+        if len(self._category_filter) == 0:
+            self._category_filter = None
 
         if detector_type == 'ssd':
             rospy.loginfo('Chosen detector type: Single Shot Detector')
@@ -98,6 +102,10 @@ class Detector:
                     scene = self._bridge.imgmsg_to_cv2(self._current_image, 'rgb8')
                     marked_image, objects = self._detector.from_image(scene)  # detect objects
                     self._imagepub.publish(self._bridge.cv2_to_imgmsg(marked_image, 'rgb8'))  # publish detection results
+
+                    for key in objects:
+                        if key not in self._category_filter:
+                            del objects[key]
 
                     msg = DetectedObjectArray()
 

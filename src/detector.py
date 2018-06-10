@@ -179,7 +179,7 @@ class Detector:
 
 
 if __name__ == '__main__':
-    rospy.init_node('dodo_detector_ros', log_level=rospy.DEBUG)
+    rospy.init_node('dodo_detector_ros', log_level=rospy.INFO)
     try:
         Detector().run()
     except KeyboardInterrupt:

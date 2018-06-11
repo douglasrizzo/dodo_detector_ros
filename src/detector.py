@@ -166,10 +166,10 @@ class Detector:
                                         tf_id,
                                         'camera_link')
 
-                                # add the object to the unfiltered publisher,
-                                # as well as the ones whose filter include this class of objects                            for key in self._publishers:
-                                if key is None or obj_class in self._publishers[key][0]:
-                                    msgs[key].detected_objects.append(detected_object)
+                            # add the object to the unfiltered publisher,
+                            # as well as the ones whose filter include this class of objects                            for key in self._publishers:
+                            if key is None or obj_class in self._publishers[key][0]:
+                                msgs[key].detected_objects.append(detected_object)
 
                     # publish all the messages in their corresponding publishers
                     for key in self._publishers:

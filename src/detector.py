@@ -14,15 +14,15 @@ from dodo_detector_ros.msg import DetectedObject, DetectedObjectArray
 
 class Detector:
 
-    def __init__(self):
+    def __init__(self):        
         #  get label map and inference graph from params
-        detector_type = rospy.get_param('/dodo_detector_ros/detector_type')
-        frozen_graph = rospy.get_param('/dodo_detector_ros/inference_graph', '')
-        label_map = rospy.get_param('/dodo_detector_ros/label_map', '')
-        confidence = rospy.get_param('/dodo_detector_ros/ssd_confidence', 0.5)
-        min_points = rospy.get_param('/dodo_detector_ros/sift_min_pts', 10)
-        database_path = rospy.get_param('/dodo_detector_ros/sift_database_path', '')
-        filters = rospy.get_param('/dodo_detector_ros/filters', {})
+        detector_type = rospy.get_param('~detector_type')
+        frozen_graph = rospy.get_param('~inference_graph', '')
+        label_map = rospy.get_param('~label_map', '')
+        confidence = rospy.get_param('~ssd_confidence', 0.5)
+        min_points = rospy.get_param('~sift_min_pts', 10)
+        database_path = rospy.get_param('~sift_database_path', '')
+        filters = rospy.get_param('~filters', {})
 
         if detector_type == 'ssd':
             rospy.loginfo('Chosen detector type: Single Shot Detector')
@@ -79,13 +79,13 @@ class Detector:
 
         # this package works with a dynamic list of publishers
         # there is one default, unfiltered publisher that will publish every object
-        self._publishers = {None: (None, rospy.Publisher('dodo_detector_ros/detected', DetectedObjectArray, queue_size=10))}
+        self._publishers = {None: (None, rospy.Publisher('~detected', DetectedObjectArray, queue_size=10))}
 
         # additionaly, for each filter created in the yaml config file,
         # a new publisher is created
         for key in filters:
             self._publishers[key] = (filters[key],
-                rospy.Publisher('dodo_detector_ros/detected_' + key, DetectedObjectArray, queue_size=10))
+                rospy.Publisher('~detected_' + key, DetectedObjectArray, queue_size=10))
 
 
         self._tfpub = tf.TransformBroadcaster()
@@ -136,8 +136,8 @@ class Detector:
                             if self._current_pc is None:
                                 rospy.logwarn('No point cloud information available to track object in scene')
 
-                            # if we have a point cloud, we'll try and find
-                            # the location of the object in space using it
+                            # if there is point cloud data, we'll try to place a tf
+                            # in the object's location
                             else:
                                 # this function gives us a generator of points.
                                 # we ask for a single point in the center of our object.
@@ -180,6 +180,7 @@ class Detector:
 
 if __name__ == '__main__':
     rospy.init_node('dodo_detector_ros', log_level=rospy.INFO)
+
     try:
         Detector().run()
     except KeyboardInterrupt:

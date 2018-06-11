@@ -1,3 +1,7 @@
+# subscribers needed by the detector
+image_subscriber: /camera/rgb/image_color
+pointcloud2_subscriber: /camera/depth_registered/points
+
 # ['sift', 'rootsift', 'ssd']
 detector_type: ssd
 # path to TensorFlow Object Detection API frozen inference graph

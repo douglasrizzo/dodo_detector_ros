@@ -65,17 +65,20 @@ class Detector:
         # create detector
         self._bridge = CvBridge()
 
+        image_sub = rospy.get_param('~image_subscriber')
+        pc_sub = rospy.get_param('~pointcloud2_subscriber', None)
         # image and point cloud subscribers
         # and variables that will hold their values
-        rospy.Subscriber('/camera/rgb/image_color', Image, self.image_callback)
-        rospy.Subscriber('/camera/depth_registered/points', PointCloud2, self.pc_callback)
+        rospy.Subscriber(rospy.get_param('~image_subscriber'), Image, self.image_callback)
+        if pc_sub is not None:
+            rospy.Subscriber(rospy.get_param('~pointcloud2_subscriber'), PointCloud2, self.pc_callback)
         self._current_image = None
         self._current_pc = None
 
         # publisher for frames with detected objects
-        self._imagepub = rospy.Publisher('/dodo_detector_ros/detected_objects_image', Image, queue_size=10)
+        self._imagepub = rospy.Publisher('~labeled_image', Image, queue_size=10)
         #  publisher for object locations
-        self._pub = rospy.Publisher('dodo_detector_ros/detected', DetectedObjectArray, queue_size=10)
+        self._pub = rospy.Publisher('~detected', DetectedObjectArray, queue_size=10)
 
         # this package works with a dynamic list of publishers
         # there is one default, unfiltered publisher that will publish every object

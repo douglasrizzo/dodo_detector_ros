@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
   <name>dodo_detector_ros</name>
-  <version>0.0.1</version>
-  <description>The dodo_detector_ros package</description>
+  <version>0.1.0</version>
+  <description>A package for object detection and localization using computer vision and IR sensors.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -12,18 +12,20 @@
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>GPLv3</license>
+  <license>BSD</license>
 
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/dodo_detector_ros</url> -->
+  <!-- <url type="website">http://dodo-detector-ros.douglasrizzo.com.br/</url> -->
 
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->
   <!-- Authors do not have to be maintainers, but could be -->
   <!-- Example: -->
   <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+  <author email="douglasrizzom@gmail.com">Douglas De Rizzo Meneghetti</author>
+
 
 
   <!-- The *depend tags are used to specify dependencies -->

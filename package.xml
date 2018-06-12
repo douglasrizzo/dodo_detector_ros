@@ -57,10 +57,13 @@
     
   <run_depend>cv_bridge</run_depend>
   <run_depend>geometry_msgs</run_depend>
+  <run_depend>libfreenect</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>uvc_camera</run_depend>
+  <run_depend>kinect2_bridge</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

@@ -64,14 +64,11 @@ class Detector:
 
         # create detector
         self._bridge = CvBridge()
-
-        image_sub = rospy.get_param('~image_subscriber')
-        pc_sub = rospy.get_param('~pointcloud2_subscriber', None)
+        
         # image and point cloud subscribers
         # and variables that will hold their values
-        rospy.Subscriber(rospy.get_param('~image_subscriber'), Image, self.image_callback)
-        if pc_sub is not None:
-            rospy.Subscriber(rospy.get_param('~pointcloud2_subscriber'), PointCloud2, self.pc_callback)
+        rospy.Subscriber('/dodo_detector_ros/image_feed', Image, self.image_callback)
+        rospy.Subscriber('/dodo_detector_ros/pointcloud_feed', PointCloud2, self.pc_callback)
         self._current_image = None
         self._current_pc = None
 
@@ -170,9 +167,10 @@ class Detector:
                                         'camera_link')
 
                             # add the object to the unfiltered publisher,
-                            # as well as the ones whose filter include this class of objects                            for key in self._publishers:
-                            if key is None or obj_class in self._publishers[key][0]:
-                                msgs[key].detected_objects.append(detected_object)
+                            # as well as the ones whose filter include this class of objects
+                            for key in self._publishers:
+                                if key is None or obj_class in self._publishers[key][0]:
+                                    msgs[key].detected_objects.append(detected_object)
 
                     # publish all the messages in their corresponding publishers
                     for key in self._publishers:

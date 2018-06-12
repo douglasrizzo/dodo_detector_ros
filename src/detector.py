@@ -84,11 +84,15 @@ class Detector:
         # additionaly, for each filter created in the yaml config file,
         # a new publisher is created
         for key in filters:
+            rospy.loginfo('Creating topic for filter [' + key + ']')
+
             self._publishers[key] = (filters[key],
                 rospy.Publisher('~detected_' + key, DetectedObjectArray, queue_size=10))
 
 
         self._tfpub = tf.TransformBroadcaster()
+        rospy.loginfo('Ready to detect!')
+
 
     def image_callback(self, image):
         """Image callback"""

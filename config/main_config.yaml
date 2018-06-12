@@ -1,7 +1,3 @@
-# subscribers needed by the detector
-image_subscriber: /camera/rgb/image_color
-pointcloud2_subscriber: /camera/depth_registered/points
-
 # ['sift', 'rootsift', 'ssd']
 detector_type: ssd
 # path to TensorFlow Object Detection API frozen inference graph
@@ -12,6 +8,3 @@ label_map: ~/.dodo_detector_ros/mscoco_label_map.pbtxt
 ssd_confidence: 0.5
 sift_min_pts: 10
 sift_database_path: ~/.dodo_detector_ros/sift_database
-
-filters:
-  people: [person]

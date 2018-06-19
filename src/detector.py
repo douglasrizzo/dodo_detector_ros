@@ -86,7 +86,13 @@ class Detector:
         else:
             self._publishers = {}
             for key in filters:
-                if filters[key] not in self._detector.categories:
+                cat_ok = False
+                for cat in self._detector.categories:
+                    if cat in filters[key]:
+                        cat_ok = True
+                        break
+
+                if not cat_ok:
                     rospy.logwarn('Key ' + filters[key] + ' is not detected by this detector!')
 
                 else:

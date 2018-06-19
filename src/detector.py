@@ -14,7 +14,7 @@ from dodo_detector_ros.msg import DetectedObject, DetectedObjectArray
 
 class Detector:
 
-    def __init__(self):        
+    def __init__(self):
         #  get label map and inference graph from params
         detector_type = rospy.get_param('~detector_type')
         frozen_graph = rospy.get_param('~inference_graph', '')
@@ -64,7 +64,7 @@ class Detector:
 
         # create detector
         self._bridge = CvBridge()
-        
+
         # image and point cloud subscribers
         # and variables that will hold their values
         rospy.Subscriber('/dodo_detector_ros/image_feed', Image, self.image_callback)
@@ -74,25 +74,30 @@ class Detector:
 
         # publisher for frames with detected objects
         self._imagepub = rospy.Publisher('~labeled_image', Image, queue_size=10)
-        #  publisher for object locations
-        self._pub = rospy.Publisher('~detected', DetectedObjectArray, queue_size=10)
 
         # this package works with a dynamic list of publishers
-        # there is one default, unfiltered publisher that will publish every object
-        self._publishers = {None: (None, rospy.Publisher('~detected', DetectedObjectArray, queue_size=10))}
+        # if no filter is configured via parameters to the package,
+        # one default, unfiltered publisher will publish every object
+        if len(filters) == 0:
+            rospy.loginfo('No filter configured, publishing every detected object in a single topic')
+            self._publishers = {None: (None, rospy.Publisher('~detected', DetectedObjectArray, queue_size=10))}
 
-        # additionaly, for each filter created in the yaml config file,
-        # a new publisher is created
-        for key in filters:
-            rospy.loginfo('Creating topic for filter [' + key + ']')
+        # else, for each filter created in the yaml config file, a new publisher is created
+        else:
+            self._publishers = {}
+            for key in filters:
+                if key not in self._detector.categories:
+                    rospy.logwarn('Key ' + key + ' is not detected by this detector!')
 
-            self._publishers[key] = (filters[key],
-                rospy.Publisher('~detected_' + key, DetectedObjectArray, queue_size=10))
-
+                else:
+                    self._publishers[key] = (filters[key],
+                                             rospy.Publisher('~detected_' + key,
+                                                             DetectedObjectArray,
+                                                             queue_size=10))
+                    rospy.loginfo('Created topic for filter [' + key + ']')
 
         self._tfpub = tf.TransformBroadcaster()
         rospy.loginfo('Ready to detect!')
-
 
     def image_callback(self, image):
         """Image callback"""
@@ -113,7 +118,8 @@ class Detector:
                     # convert image from the subscriber into an OpenCV image
                     scene = self._bridge.imgmsg_to_cv2(self._current_image, 'rgb8')
                     marked_image, objects = self._detector.from_image(scene)  # detect objects
-                    self._imagepub.publish(self._bridge.cv2_to_imgmsg(marked_image, 'rgb8'))  # publish detection results
+                    self._imagepub.publish(
+                        self._bridge.cv2_to_imgmsg(marked_image, 'rgb8'))  # publish detection results
 
                     # we'll created an empty msg for all publishers
                     msgs = {}
@@ -158,23 +164,30 @@ class Detector:
 
                                     point_x, point_y, point_z = pc_list[0]
 
-                                    # kinect here is mapped as camera_link
-                                    # object tf (x, y, z) must be
-                                    # passed as (z,-x,-y)
-                                    self._tfpub.sendTransform(
-                                        (point_z,
-                                         -point_x,
-                                         -point_y),
-                                        tf.transformations.quaternion_from_euler(0, 0, 0),
-                                        rospy.Time.now(),
-                                        tf_id,
-                                        'camera_link')
-
-                            # add the object to the unfiltered publisher,
-                            # as well as the ones whose filter include this class of objects
+                            tf_published = False
                             for key in self._publishers:
+                                # add the object to the unfiltered publisher,
+                                # as well as the ones whose filter include this class of objects
                                 if key is None or obj_class in self._publishers[key][0]:
                                     msgs[key].detected_objects.append(detected_object)
+
+                                    # we'll publish a TF related to this object only once
+                                    if not tf_published:
+                                        # kinect here is mapped as camera_link
+                                        # object tf (x, y, z) must be
+                                        # passed as (z,-x,-y)
+                                        self._tfpub.sendTransform(
+                                            (point_z,
+                                             -point_x,
+                                             -point_y),
+                                            tf.transformations.quaternion_from_euler(0, 0, 0),
+                                            rospy.Time.now(),
+                                            tf_id,
+                                            'camera_link')
+
+                                        tf_published = True
+
+
 
                     # publish all the messages in their corresponding publishers
                     for key in self._publishers:

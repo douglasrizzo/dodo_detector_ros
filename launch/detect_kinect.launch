@@ -6,6 +6,5 @@
 	<include file="$(find freenect_launch)/launch/examples/freenect-registered-xyzrgb.launch"/>
 	<node name="dodo_detector_ros" pkg="dodo_detector_ros" type="detector.py" output="screen">
 		<rosparam command="load" file="$(find dodo_detector_ros)/config/main_config.yaml"/>
-		<!-- <rosparam command="load" file="$(find dodo_detector_ros)/config/pc_config.yaml"/> -->
 	</node>
 </launch>

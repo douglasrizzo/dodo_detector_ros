@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <launch>
-	<remap from="/kinect2/qhd/image_color" to="/dodo_detector_ros/image_feed"/>
-	<remap from="/kinect2/qhd/points" to="/dodo_detector_ros/pointcloud_feed"/>
-
-	<include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch">
-		<param name="_depth_method" value="cpu"  type="str" />
-	</include>
-
-	<node name="dodo_detector_ros" pkg="dodo_detector_ros" type="detector.py" output="screen">
-		<rosparam command="load" file="$(find dodo_detector_ros)/config/main_config.yaml"/>
-	</node>
+    <remap from="/kinect2/hd/image_color" to="/dodo_detector_ros/image_feed"/>
+    <remap from="/kinect2/hd/points" to="/dodo_detector_ros/pointcloud_feed"/>
+    
+    <include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch">
+        <param name="_depth_method" value="cpu" type="str"/>
+    </include>
+    
+    <node name="dodo_detector_ros" pkg="dodo_detector_ros" type="detector.py" output="screen">
+        <rosparam command="load" file="$(find dodo_detector_ros)/config/main_config.yaml"/>
+    </node>
 </launch>

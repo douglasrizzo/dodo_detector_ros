@@ -6,6 +6,8 @@
     <include file="$(find freenect_launch)/launch/examples/freenect-registered-xyzrgb.launch"/>
     
     <node name="dodo_detector_ros" pkg="dodo_detector_ros" type="detector.py" output="screen">
+    <remap to="/camera/rgb/image_color" from="/dodo_detector_ros/image_feed"/>
+    <remap to="/camera/depth_registered/points" from="/dodo_detector_ros/pointcloud_feed"/>
         <rosparam command="load" file="$(find dodo_detector_ros)/config/main_config.yaml"/>
     </node>
 </launch>

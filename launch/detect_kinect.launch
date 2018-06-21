@@ -1,13 +1,11 @@
 <?xml version="1.0"?>
 <launch>
     <remap from="/camera/rgb/image_color" to="/dodo_detector_ros/image_feed"/>
-    <remap from="/camera/depth_registered/points" to="/dodo_detector_ros/pointcloud_feed"/>
+    <remap from="/camera/depth/points" to="/dodo_detector_ros/pointcloud_feed"/>
 
-    <include file="$(find freenect_launch)/launch/examples/freenect-registered-xyzrgb.launch"/>
+    <include file="$(find freenect_launch)/launch/freenect.launch"/>
     
     <node name="dodo_detector_ros" pkg="dodo_detector_ros" type="detector.py" output="screen">
-    <remap to="/camera/rgb/image_color" from="/dodo_detector_ros/image_feed"/>
-    <remap to="/camera/depth_registered/points" from="/dodo_detector_ros/pointcloud_feed"/>
         <rosparam command="load" file="$(find dodo_detector_ros)/config/main_config.yaml"/>
     </node>
 </launch>

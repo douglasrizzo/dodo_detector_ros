@@ -170,30 +170,28 @@ class Detector:
 
                                     point_x, point_y, point_z = pc_list[0]
 
-                            tf_published = False
-                            for key in self._publishers:
-                                # add the object to the unfiltered publisher,
-                                # as well as the ones whose filter include this class of objects
-                                if key is None or obj_class in self._publishers[key][0]:
-                                    msgs[key].detected_objects.append(detected_object)
+                                    tf_published = False
+                                    for key in self._publishers:
+                                        # add the object to the unfiltered publisher,
+                                        # as well as the ones whose filter include this class of objects
+                                        if key is None or obj_class in self._publishers[key][0]:
+                                            msgs[key].detected_objects.append(detected_object)
 
-                                    # we'll publish a TF related to this object only once
-                                    if not tf_published:
-                                        # kinect here is mapped as camera_link
-                                        # object tf (x, y, z) must be
-                                        # passed as (z,-x,-y)
-                                        self._tfpub.sendTransform(
-                                            (point_z,
-                                             -point_x,
-                                             -point_y),
-                                            tf.transformations.quaternion_from_euler(0, 0, 0),
-                                            rospy.Time.now(),
-                                            tf_id,
-                                            'camera_link')
+                                            # we'll publish a TF related to this object only once
+                                            if not tf_published:
+                                                # kinect here is mapped as camera_link
+                                                # object tf (x, y, z) must be
+                                                # passed as (z,-x,-y)
+                                                self._tfpub.sendTransform(
+                                                    (point_z,
+                                                     -point_x,
+                                                     -point_y),
+                                                    tf.transformations.quaternion_from_euler(0, 0, 0),
+                                                    rospy.Time.now(),
+                                                    tf_id,
+                                                    'camera_link')
 
-                                        tf_published = True
-
-
+                                                tf_published = True
 
                     # publish all the messages in their corresponding publishers
                     for key in self._publishers:

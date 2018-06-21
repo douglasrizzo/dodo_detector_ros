@@ -24,8 +24,8 @@ Edit `config/main_config.yaml` to select which type of detector you want as well
 
 There are 3 launch files:
 
- - `detect_camera.launch` detects objects from the `image_raw` topic of a webcam or other camera compatible with the `uvc_camera` package;
- - `detect_kinect.launch` detects objects using a Kinect. It uses freenect and subscribes to `camera/rgb/image_color` for images and `/camera/depth_registered/points` for the point cloud;
- - `detect_kinect2.launch` detects objects using a Kinect for Xbox One. It uses [libfreenect2](https://github.com/OpenKinect/libfreenect2) and [iai_kinect2](https://github.com/code-iai/iai_kinect2) to connect with the device and subscribes to `/kinect2/hd/image_color` for images and `/kinect2/hd/points` for the point cloud. You can copy this launch file and use the `sd` and `qhd` topics if you need more perfomance.
+ - `detect_camera.launch` detects objects from the `image_raw` topic of a webcam or other camera compatible with the _uvc_camera_ package;
+ - `detect_kinect.launch` detects objects using a Kinect. It uses the _freenect_ and subscribes to `camera/rgb/image_color` for images and `/camera/depth/points` for the point cloud;
+ - `detect_kinect2.launch` detects objects using a Kinect for Xbox One. It uses [libfreenect2](https://github.com/OpenKinect/libfreenect2) and [iai_kinect2](https://github.com/code-iai/iai_kinect2) to connect with the device and subscribes to `/kinect2/hd/image_color` for images and `/kinect2/hd/points` for the point cloud. You can copy the launch file and use the `sd` and `qhd` topics if you need more perfomance.
 
 The topics that subscribe to point clouds publish TFs for each detected object.

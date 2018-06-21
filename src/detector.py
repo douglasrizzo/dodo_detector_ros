@@ -199,7 +199,6 @@ class Detector:
                 except CvBridgeError as e:
                     print(e)
 
-
 if __name__ == '__main__':
     rospy.init_node('dodo_detector_ros', log_level=rospy.INFO)
 

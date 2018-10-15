@@ -1,6 +1,6 @@
 # Object detection from images/point cloud using ROS
 
-This ROS package creates an interface with [dodo detector](https://gitlab.com/douglasrizzo/dodo_detector), a Python package that detects objects from images.
+This ROS package creates an interface with [dodo detector](https://github.com/douglasrizzo/dodo_detector), a Python package that detects objects from images.
 
 This package makes information regarding detected objects available in a topic, using a special kind of message. 
 
@@ -8,13 +8,13 @@ When using an OpenNI-compatible sensor (like Kinect) the package uses point clou
 
 ## Installation
 
-Check [dodo detector](https://gitlab.com/douglasrizzo/dodo_detector)'s README file for a list of dependencies unrelated to ROS. Other dependencies are listed on `package.xml`.
+Check [dodo detector](https://github.com/douglasrizzo/dodo_detector)'s README file for a list of dependencies unrelated to ROS. Other dependencies are listed on `package.xml`.
 
 ## Configuration
 
 The package works in two steps. First, it detects objects by using a video feed and then it uses a point cloud to publish TFs for each detected object.
 
-Object detection is done via the [dodo detector](https://gitlab.com/douglasrizzo/dodo_detector) package. In case the single-shot detector is to be used, point the `inference_graph` and `label_map` parameters to your corresponding files. These files are created when training an object detection neural network using [TensorFlow Object Detection API](https://github.com/tensorflow/models/tree/master/research/object_detection). Also, the `ssd_confidence` parameter can be changed to adjust the detection threshold of the network.
+Object detection is done via the [dodo detector](https://github.com/douglasrizzo/dodo_detector) package. In case the single-shot detector is to be used, point the `inference_graph` and `label_map` parameters to your corresponding files. These files are created when training an object detection neural network using [TensorFlow Object Detection API](https://github.com/tensorflow/models/tree/master/research/object_detection). Also, the `ssd_confidence` parameter can be changed to adjust the detection threshold of the network.
 
 In case the keypoint-based detector is to be used (either SIFT or RootSIFT), you need to create a database directory. The procedure to do so is described [here](http://dodo-detector.douglasrizzo.com.br/#keypoint-based-detector).
 

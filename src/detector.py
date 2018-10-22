@@ -60,7 +60,7 @@ class Detector:
                 detector_type,
                 min_points=min_points)
             rospy.loginfo('Database path: ' + database_path)
-            rospy.loginfo('Min. points: ' + min_points)
+            rospy.loginfo('Min. points: ' + str(min_points))
 
         # create detector
         self._bridge = CvBridge()

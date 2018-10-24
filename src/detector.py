@@ -145,12 +145,16 @@ class Detector:
 
                             detected_object = DetectedObject()
                             detected_object.type.data = obj_class
-
+                            detected_object.image_x.data = xmin
+                            detected_object.image_y.data = ymin
+                            detected_object.image_width.data = xmax - xmin
+                            detected_object.image_height.data = ymax - ymin
                             # TODO the timestamp of image, depth and point cloud should be checked
                             # to make sure we are using synchronized data...
 
+                            publish_tf = False
                             if self._current_pc is None:
-                                rospy.logwarn('No point cloud information available to track object in scene')
+                                rospy.loginfo('No point cloud information available to track current object in scene')
 
                             # if there is point cloud data, we'll try to place a tf
                             # in the object's location

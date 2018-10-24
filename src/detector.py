@@ -127,7 +127,7 @@ class Detector:
                     self._imagepub.publish(
                         self._bridge.cv2_to_imgmsg(marked_image, 'rgb8'))  # publish detection results
 
-                    # we'll created an empty msg for all publishers
+                    # well create an empty msg for all publishers
                     msgs = {}
                     for key in self._publishers:
                         msgs[key] = DetectedObjectArray()

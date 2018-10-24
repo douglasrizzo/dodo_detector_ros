@@ -127,7 +127,7 @@ class Detector:
                     self._imagepub.publish(
                         self._bridge.cv2_to_imgmsg(marked_image, 'rgb8'))  # publish detection results
 
-                    # well create an empty msg for all publishers
+                    # well create an empty msg for each publisher
                     msgs = {}
                     for key in self._publishers:
                         msgs[key] = DetectedObjectArray()
@@ -163,6 +163,8 @@ class Detector:
                                     field_names=('x', 'y', 'z'),
                                     uvs=[(x_center, y_center)]))
 
+                                publish_tf = True
+
                                 if len(pc_list) > 0:
                                     # this is the location of our object in space
                                     tf_id = obj_class + '_' + str(obj_type_index)
@@ -170,28 +172,26 @@ class Detector:
 
                                     point_x, point_y, point_z = pc_list[0]
 
-                                    tf_published = False
-                                    for key in self._publishers:
-                                        # add the object to the unfiltered publisher,
-                                        # as well as the ones whose filter include this class of objects
-                                        if key is None or obj_class in self._publishers[key][0]:
-                                            msgs[key].detected_objects.append(detected_object)
+                            for key in self._publishers:
+                                # add the object to the unfiltered publisher,
+                                # as well as the ones whose filter include this class of objects
+                                print('my life is eternal pain')
+                                if key is None or obj_class in self._publishers[key][0]:
+                                    msgs[key].detected_objects.append(detected_object)
 
-                                            # we'll publish a TF related to this object only once
-                                            if not tf_published:
-                                                # kinect here is mapped as camera_link
-                                                # object tf (x, y, z) must be
-                                                # passed as (z,-x,-y)
-                                                self._tfpub.sendTransform(
-                                                    (point_z,
-                                                     -point_x,
-                                                     -point_y),
-                                                    tf.transformations.quaternion_from_euler(0, 0, 0),
-                                                    rospy.Time.now(),
-                                                    tf_id,
-                                                    'camera_link')
-
-                                                tf_published = True
+                            # we'll publish a TF related to this object only once
+                            if publish_tf:
+                                # kinect here is mapped as camera_link
+                                # object tf (x, y, z) must be
+                                # passed as (z,-x,-y)
+                                self._tfpub.sendTransform(
+                                    (point_z,
+                                     -point_x,
+                                     -point_y),
+                                    tf.transformations.quaternion_from_euler(0, 0, 0),
+                                    rospy.Time.now(),
+                                    tf_id,
+                                    'camera_link')
 
                     # publish all the messages in their corresponding publishers
                     for key in self._publishers:

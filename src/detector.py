@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import rospy
+import numpy
 import tf
 
 from os.path import expanduser
@@ -23,6 +24,12 @@ class Detector:
         min_points = rospy.get_param('~sift_min_pts', 10)
         database_path = rospy.get_param('~sift_database_path', '')
         filters = rospy.get_param('~filters', {})
+        
+        self._fixed_frame = rospy.get_param('~fixed_frame', None)
+        
+        # create a transform listener so we get the fixed frame the user wants
+        # to publish object tfs related to
+        self._tf_listener = tf.TransformListener()
 
         if detector_type == 'ssd':
             rospy.loginfo('Chosen detector type: Single Shot Detector')
@@ -121,6 +128,12 @@ class Detector:
             # only run if there's an image present
             if self._current_image is not None:
                 try:
+
+                    # if the user passes a fixed frame, we'll ask for transformation
+                    # vectors from the camera link to the fixed frame
+                    if self._fixed_frame is not None:
+                        (trans, _) = self._tf_listener.lookupTransform('/' + self._fixed_frame, '/camera_link', rospy.Time(0))
+
                     # convert image from the subscriber into an OpenCV image
                     scene = self._bridge.imgmsg_to_cv2(self._current_image, 'rgb8')
                     marked_image, objects = self._detector.from_image(scene)  # detect objects
@@ -187,21 +200,30 @@ class Detector:
                             if publish_tf:
                                 # kinect here is mapped as camera_link
                                 # object tf (x, y, z) must be
-                                # passed as (z,-x,-y)
+                                # passed as (z,-x,-y)          
+                                object_tf = [point_z, -point_x, -point_y]
+                                frame = 'camera_link'
+
+                                # translate the tf in regard to the fixed frame
+                                if self._fixed_frame is not None:                      
+                                    object_tf = numpy.array(trans) + object_tf
+                                    frame = self._fixed_frame
+
                                 self._tfpub.sendTransform(
-                                    (point_z,
-                                     -point_x,
-                                     -point_y),
+                                    (object_tf),
                                     tf.transformations.quaternion_from_euler(0, 0, 0),
                                     rospy.Time.now(),
                                     tf_id,
-                                    'camera_link')
+                                    frame)
 
                     # publish all the messages in their corresponding publishers
                     for key in self._publishers:
                         self._publishers[key][1].publish(msgs[key])
                 except CvBridgeError as e:
                     print(e)
+                except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
+                    print(e)
+
 
 if __name__ == '__main__':
     rospy.init_node('dodo_detector_ros', log_level=rospy.INFO)

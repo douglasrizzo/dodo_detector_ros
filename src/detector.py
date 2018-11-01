@@ -26,6 +26,7 @@ class Detector:
         filters = rospy.get_param('~filters', {})
 
         self._global_frame = rospy.get_param('~global_frame', None)
+        self._tf_prefix = rospy.get_param('~tf_prefix', None)
 
         # create a transform listener so we get the fixed frame the user wants
         # to publish object tfs related to
@@ -173,6 +174,11 @@ class Detector:
                                     publish_tf = True
                                     # this is the location of our object in space
                                     tf_id = obj_class + '_' + str(obj_type_index)
+
+                                    # if the user passes a tf prefix, we append it to the object tf name here
+                                    if self._tf_prefix is not None:
+                                        tf_id = self._tf_prefix + '/' + tf_id
+
                                     detected_object.tf_id.data = tf_id
 
                                     point_x, point_y, point_z = pc_list[0]

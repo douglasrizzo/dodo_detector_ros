@@ -16,3 +16,6 @@ sift_database_path: ~/.dodo_detector_ros/sift_database
 
 # the frame or tf that all object tfs will be published in relation to, leave blank to publish wrt. camera_link
 # global_frame: map
+
+# a prefix for the object tfs which will be published by the package
+tf_prefix: dodo_detector_ros

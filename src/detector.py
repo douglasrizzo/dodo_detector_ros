@@ -174,15 +174,10 @@ class Detector:
                             else:
                                 # this function gives us a generator of points.
                                 # we ask for a single point in the center of our object.
-                                pc_list = list(pc2.read_points(
-                                    self._current_pc,
-                                    skip_nans=True,
-                                    field_names=('x', 'y', 'z'),
-                                    uvs=[(x_center, y_center)]))
-
-                                publish_tf = True
+                                pc_list = list(pc2.read_points(self._current_pc, skip_nans=True, field_names=('x', 'y', 'z'), uvs=[(x_center, y_center)]))
 
                                 if len(pc_list) > 0:
+                                    publish_tf = True
                                     # this is the location of our object in space
                                     tf_id = obj_class + '_' + str(obj_type_index)
                                     detected_object.tf_id.data = tf_id

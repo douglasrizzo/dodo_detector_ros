@@ -187,7 +187,6 @@ class Detector:
                             for key in self._publishers:
                                 # add the object to the unfiltered publisher,
                                 # as well as the ones whose filter include this class of objects
-                                print('my life is eternal pain')
                                 if key is None or obj_class in self._publishers[key][0]:
                                     msgs[key].detected_objects.append(detected_object)
 

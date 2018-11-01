@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>dodo_detector_ros</name>
-  <version>0.2.0</version>
+  <version>0.2.1</version>
   <description>A package for object detection and localization using computer vision and IR sensors.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
@@ -17,7 +17,7 @@
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://dodo-detector-ros.douglasrizzo.com.br/</url> -->
+  <!-- <url type="website">http://github.com/douglasrizzo/dodo_detector_ros</url> -->
 
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->

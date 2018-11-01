@@ -16,13 +16,24 @@ Check [dodo detector](https://github.com/douglasrizzo/dodo_detector)'s README fi
 
 ## Configuration
 
+Edit `config/main_config.yaml` to select which type of detector you want as well as to point the package to the artifacts each detector expects.
+
+ - `global_frame`: the frame or tf that all object tfs will be published in relation to, eg `map`. Leave blank to publish wrt. camera_link
+ - `tf_prefix`: a prefix for the object tfs which will be published by the package
+ - `detector_type`: either 'sift', 'rootsift' or 'ssd'
+ - `inference_graph`: path to TensorFlow Object Detection API frozen inference graph, the `.pb` file
+ - `label_map`: path to TensorFlow Object Detection API label map, the `.pbtxt`
+ - `ssd_confidence`: confidence level to report objects as detected by the neural network, between 0 and 1
+ - `sift_min_pts`: minimum number of points to consider an object as present in the scene
+ - `sift_database_path`: path to the database used by the keypoint object detector
+
+## Functionality
+
 The package works in two steps. First, it detects objects by using a video feed and then it uses a point cloud to publish TFs for each detected object.
 
 Object detection is done via the [dodo detector](https://github.com/douglasrizzo/dodo_detector) package. In case the single-shot detector is to be used, point the `inference_graph` and `label_map` parameters to your corresponding files. These files are created when training an object detection neural network using [TensorFlow Object Detection API](https://github.com/tensorflow/models/tree/master/research/object_detection). Also, the `ssd_confidence` parameter can be changed to adjust the detection threshold of the network.
 
-In case the keypoint-based detector is to be used (either SIFT or RootSIFT), you need to create a database directory. The procedure to do so is described [here](http://dodo-detector.douglasrizzo.com.br/#keypoint-based-detector).
-
-Edit `config/main_config.yaml` to select which type of detector you want as well as to point the package to the artifacts each detector expects.
+In case the keypoint-based detector is to be used (either SIFT or RootSIFT), you need to create a database directory. The procedure to do so is described [here](http://douglasrizzo.github.io/dodo_detector#keypoint-based-detector).
 
 ## Usage
 

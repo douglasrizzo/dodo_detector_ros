@@ -62,10 +62,7 @@ class Detector:
             database_path = expanduser(database_path)
 
             detector_type = 'SIFT' if detector_type == 'sift' else 'RootSIFT'
-            self._detector = KeypointObjectDetector(
-                database_path,
-                detector_type,
-                min_points=min_points)
+            self._detector = KeypointObjectDetector(database_path, detector_type, min_points=min_points)
             rospy.loginfo('Database path: ' + database_path)
             rospy.loginfo('Min. points: ' + str(min_points))
 
@@ -103,10 +100,7 @@ class Detector:
                     rospy.logwarn('Key ' + filters[key] + ' is not detected by this detector!')
 
                 else:
-                    self._publishers[key] = (filters[key],
-                                             rospy.Publisher('~detected_' + key,
-                                                             DetectedObjectArray,
-                                                             queue_size=10))
+                    self._publishers[key] = (filters[key], rospy.Publisher('~detected_' + key, DetectedObjectArray, queue_size=10))
                     rospy.loginfo('Created topic for filter [' + key + ']')
 
         self._tfpub = tf.TransformBroadcaster()
@@ -137,8 +131,7 @@ class Detector:
                     # convert image from the subscriber into an OpenCV image
                     scene = self._bridge.imgmsg_to_cv2(self._current_image, 'rgb8')
                     marked_image, objects = self._detector.from_image(scene)  # detect objects
-                    self._imagepub.publish(
-                        self._bridge.cv2_to_imgmsg(marked_image, 'rgb8'))  # publish detection results
+                    self._imagepub.publish(self._bridge.cv2_to_imgmsg(marked_image, 'rgb8'))  # publish detection results
 
                     # well create an empty msg for each publisher
                     msgs = {}
@@ -203,12 +196,7 @@ class Detector:
                                     object_tf = numpy.array(trans) + object_tf
                                     frame = self._global_frame
 
-                                self._tfpub.sendTransform(
-                                    (object_tf),
-                                    tf.transformations.quaternion_from_euler(0, 0, 0),
-                                    rospy.Time.now(),
-                                    tf_id,
-                                    frame)
+                                self._tfpub.sendTransform((object_tf), tf.transformations.quaternion_from_euler(0, 0, 0), rospy.Time.now(), tf_id, frame)
 
                     # publish all the messages in their corresponding publishers
                     for key in self._publishers:

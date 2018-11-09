@@ -28,7 +28,7 @@ class Detector:
         point_cloud_topic = rospy.get_param('~point_cloud_topic', None)
 
         self._global_frame = rospy.get_param('~global_frame', None)
-        self._tf_prefix = rospy.get_param('~tf_prefix', None)
+        self._tf_prefix = rospy.get_param('~tf_prefix', rospy.get_name())
 
         # create a transform listener so we get the fixed frame the user wants
         # to publish object tfs related to

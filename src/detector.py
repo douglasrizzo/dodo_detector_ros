@@ -24,6 +24,8 @@ class Detector:
         min_points = rospy.get_param('~sift_min_pts', 10)
         database_path = rospy.get_param('~sift_database_path', '')
         filters = rospy.get_param('~filters', {})
+        image_topic = rospy.get_param('~image_topic')
+        point_cloud_topic = rospy.get_param('~point_cloud_topic', None)
 
         self._global_frame = rospy.get_param('~global_frame', None)
         self._tf_prefix = rospy.get_param('~tf_prefix', None)
@@ -72,8 +74,13 @@ class Detector:
 
         # image and point cloud subscribers
         # and variables that will hold their values
-        rospy.Subscriber('/dodo_detector_ros/image_feed', Image, self.image_callback)
-        rospy.Subscriber('/dodo_detector_ros/pointcloud_feed', PointCloud2, self.pc_callback)
+        rospy.Subscriber(image_topic, Image, self.image_callback)
+
+        if point_cloud_topic is not None:
+            rospy.Subscriber(point_cloud_topic, PointCloud2, self.pc_callback)
+        else:
+            rospy.loginfo('No point cloud information available. Objects will not be placed in the scene.')
+
         self._current_image = None
         self._current_pc = None
 
@@ -160,8 +167,6 @@ class Detector:
                             # to make sure we are using synchronized data...
 
                             publish_tf = False
-                            if self._current_pc is None:
-                                rospy.loginfo('No point cloud information available to track current object in scene')
 
                             # if there is point cloud data, we'll try to place a tf
                             # in the object's location

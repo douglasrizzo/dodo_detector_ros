@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
 <launch>
-    <remap from="/image_raw" to="/dodo_detector_ros/image_feed"/>
-
     <node name="camera" output="screen" pkg="uvc_camera" type="uvc_camera_node"/>
     
     <node name="dodo_detector_ros" pkg="dodo_detector_ros" type="detector.py" output="screen">
         <rosparam command="load" file="$(find dodo_detector_ros)/config/main_config.yaml"/>
+        <param name="image_topic" value="/image_raw" />
     </node>
 </launch>

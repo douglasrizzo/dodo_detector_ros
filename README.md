@@ -6,7 +6,7 @@ This package makes information regarding detected objects available in a topic, 
 
 When using an OpenNI-compatible sensor (like Kinect) the package uses point cloud information to locate objects in the world, wrt. to the sensor.
 
-Click the image below for a YouTube vudeo showcasing the package at work.
+Click the image below for a YouTube video showcasing the package at work.
 
 [![Youtube video](https://img.youtube.com/vi/fXJYmJOaSxQ/0.jpg)](https://www.youtube.com/watch?v=fXJYmJOaSxQ)
 

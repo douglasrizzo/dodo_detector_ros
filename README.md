@@ -6,7 +6,7 @@ This package makes information regarding detected objects available in a topic, 
 
 When using an OpenNI-compatible sensor (like Kinect) the package uses point cloud information to locate objects in the world, wrt. to the sensor.
 
-Click the image below for a YouTube vudeo showcasing the package at work.
+Click the image below for a YouTube video showcasing the package at work.
 
 [![Youtube video](https://img.youtube.com/vi/fXJYmJOaSxQ/0.jpg)](https://www.youtube.com/watch?v=fXJYmJOaSxQ)
 
@@ -33,7 +33,7 @@ The package works in two steps. First, it detects objects by using a video feed 
 
 Object detection is done via the [dodo detector](https://github.com/douglasrizzo/dodo_detector) package. In case the single-shot detector is to be used, point the `inference_graph` and `label_map` parameters to your corresponding files. These files are created when training an object detection neural network using [TensorFlow Object Detection API](https://github.com/tensorflow/models/tree/master/research/object_detection). Also, the `ssd_confidence` parameter can be changed to adjust the detection threshold of the network.
 
-In case the keypoint-based detector is to be used (either SIFT or RootSIFT), you need to create a database directory. The procedure to do so is described [here](http://douglasrizzo.github.io/dodo_detector#keypoint-based-detector).
+In case the keypoint-based detector is to be used (either SIFT or RootSIFT), you need to create a database directory. The procedure to do so is described [here](https://douglasrizzo.github.io/dodo_detector/#keypoint-based-detector).
 
 ## Usage
 

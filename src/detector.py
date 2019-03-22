@@ -151,9 +151,9 @@ class Detector:
                         rospy.logdebug('Found ' + str(len(objects[obj_class])) + ' object(s) of type ' + obj_class)
 
                         for obj_type_index, coordinates in enumerate(objects[obj_class]):
-                            rospy.logdebug('...' + obj_class + ' ' + str(obj_type_index) + ' at ' + str(coordinates))
+                            rospy.logdebug('...' + obj_class + ' ' + str(obj_type_index) + ' at ' + str(coordinates['box']))
 
-                            ymin, xmin, ymax, xmax = coordinates
+                            ymin, xmin, ymax, xmax = coordinates['box']
                             y_center = ymax - ((ymax - ymin) / 2)
                             x_center = xmax - ((xmax - xmin) / 2)
 

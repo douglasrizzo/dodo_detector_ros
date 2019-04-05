@@ -167,6 +167,8 @@ class Detector:
                             # to make sure we are using synchronized data...
 
                             publish_tf = False
+                            if self._current_pc is None:
+                                rospy.loginfo('No point cloud information available to track current object in scene')
 
                             # if there is point cloud data, we'll try to place a tf
                             # in the object's location

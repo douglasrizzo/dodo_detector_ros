@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>dodo_detector_ros</name>
-  <version>0.2.1</version>
+  <version>0.3.0</version>
   <description>A package for object detection and localization using computer vision and IR sensors.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
@@ -27,7 +27,6 @@
   <author email="douglasrizzom@gmail.com">Douglas De Rizzo Meneghetti</author>
 
 
-
   <!-- The *depend tags are used to specify dependencies -->
   <!-- Dependencies can be catkin packages or system dependencies -->
   <!-- Examples: -->
@@ -37,7 +36,7 @@
   <!--   <build_depend>roscpp</build_depend> -->
   <!--   <exec_depend>roscpp</exec_depend> -->
   <!-- Use build_depend for packages you need at compile time: -->
-<!-- Use build_export_depend for packages you need in order to build against this package: -->
+  <!-- Use build_export_depend for packages you need in order to build against this package: -->
   <!-- Use buildtool_depend for build tool packages: -->
   <!--   <buildtool_depend>catkin</buildtool_depend> -->
   <!-- Use exec_depend for packages you need at runtime: -->

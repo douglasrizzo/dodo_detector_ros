@@ -209,7 +209,11 @@ class Detector:
                                     object_tf = numpy.array(trans) + object_tf
                                     frame = self._global_frame
 
-                                self._tfpub.sendTransform((object_tf), tf.transformations.quaternion_from_euler(0, 0, 0), rospy.Time.now(), tf_id, frame)
+                                # this fixes #7 on GitHub, when applying the
+                                # translation to the tf creates a vector that
+                                # RViz just can'y handle
+                                if object_tf is not None:
+                                    self._tfpub.sendTransform((object_tf), tf.transformations.quaternion_from_euler(0, 0, 0), rospy.Time.now(), tf_id, frame)
 
                     # publish all the messages in their corresponding publishers
                     for key in self._publishers:

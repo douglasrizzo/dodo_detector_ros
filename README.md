@@ -12,43 +12,90 @@ Click the image below for a YouTube video showcasing the package at work.
 
 ## Installation
 
-Check [dodo detector](https://github.com/douglasrizzo/dodo_detector)'s README file for a list of dependencies unrelated to ROS. Other dependencies are listed on `package.xml`.
+This repo is a ROS package, so it should be put alongside your other ROS packages inside the `src` directory of your catkin workspace.
+
+The package depends mainly on a Python package, also created by me, called [dodo detector](https://github.com/douglasrizzo/dodo_detector). Check the README file over there for a list of dependencies unrelated to ROS, but related to object detection in Python.
+
+Other ROS-related dependencies are listed on `package.xml`. If you want to use the provided `launch` files, you are going to need `uvc_camera` to start a webcam, `freenect` to access a Kinect for Xbox 360 or [libfreenect2](https://github.com/OpenKinect/libfreenect2) and [iai_kinect2](https://github.com/code-iai/iai_kinect2) to start a Kinect for Xbox One.
+
+If you use other kinds of sensor, make sure they provided an image topic and an optional point cloud topic, which will be needed later.
 
 ## Usage
 
-### Configuring a detector
+To use the package, first open the configuration file provided in `config/main_config.yaml`. These two global parameters must be configured for all types of detectors:
 
-To configure the detector that will be used by the package as well as to point the package to the artifacts each detector expects, edit `config/main_config.yaml`.
+- `global_frame`: the frame or tf that all object tfs will be published in relation to, eg `map`. Leave blank to publish wrt. `camera_link`.
+- `tf_prefix`: a prefix for the object tfs which will be published by the package.
 
- - `global_frame`: the frame or tf that all object tfs will be published in relation to, eg `map`. Leave blank to publish wrt. camera_link
- - `tf_prefix`: a prefix for the object tfs which will be published by the package
- - `detector_type`: either 'sift', 'rootsift' or 'ssd'
- - `inference_graph`: path to TensorFlow Object Detection API frozen inference graph, the `.pb` file
- - `label_map`: path to TensorFlow Object Detection API label map, the `.pbtxt`
- - `ssd_confidence`: confidence level to report objects as detected by the neural network, between 0 and 1
- - `sift_min_pts`: minimum number of points to consider an object as present in the scene
- - `sift_database_path`: path to the database used by the keypoint object detector
+Then, select which type of detector the package will use by setting the `detector_type` parameter. Acceptable values are `sift`, `rootsift` or `ssd`.
 
-### Image and point-cloud topics
+`ssd` uses the [TensorFlow Object Detection API](https://github.com/tensorflow/models/tree/master/research/object_detection). It expects a label map and an inference graph. You can find these files [here](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md) or provide your own. After you have these files, configure the following parameters in `config/main_config.yaml`:
 
-The package detects objects from images provided by a topic, whose name is given through the `image_topic` parameter.
+- `inference_graph`: path to the frozen inference graph (the `.pb` file).
+- `label_map`: path to the label map, (the `.pbtxt` file).
+- `ssd_confidence`: confidence level to report objects as detected by the neural network, between 0 and 1.
 
-If you want the package to position the detected objects in space, pass a point cloud topic to the `point_cloud_topic` parameter. Please note that the point cloud must be provided by the same sensor that provides the images that are being used to detect the objects (such as a Kinect).
+Take a look [here](https://douglasrizzo.github.io/dodo_detector/#convolutional-neural-network-detector-4) to understand how these parameters are used by the backend.
 
-### Launch files
+If `sift` or `rootsift` are chosen, a keypoint object detector will be used. The following parameters must be set in `config/main_config.yaml`:
 
-The package provides 3 launch files:
+- `sift_min_pts`: minimum number of points to consider an object as present in the scene.
+- `sift_database_path`: path to the database used by the keypoint object detector. Take a look [here](https://douglasrizzo.com.br/dodo_detector/#keypoint-based-detector) to understand how to set up the database directory.
 
- - `detect_camera.launch` detects objects from the `image_raw` topic of a webcam or other camera compatible with the *uvc_camera* package;
- - `detect_kinect.launch` detects objects using a Kinect. It uses the *freenect* package to start the sensor and subscribes to `camera/rgb/image_color` for images and `/camera/depth/points` for the point cloud;
- - `detect_kinect2.launch` detects objects using a Kinect for Xbox One. It uses [libfreenect2](https://github.com/OpenKinect/libfreenect2) and [iai_kinect2](https://github.com/code-iai/iai_kinect2) to connect with the device and subscribes to `/kinect2/hd/image_color` for images and `/kinect2/hd/points` for the point cloud. You can copy the launch file and use the `sd` and `qhd` topics if you need more performance.
+### Start the package
 
-The topics that subscribe to point clouds publish TFs for each detected object.
+After all this configuration, you are ready to start the package. Either create your own `.launch` file or use one of the files provided in the `launch` directory of the repo.
 
-## Functionality
+In your launch file, load the `config/main_config.yaml` file you just configured in the previous step and provide an `image_topic` parameter to the `detector.py` node of the `dodo_detector_ros` package. This is the image topic that the package will use as input to detect objects.
 
-The package works in two steps. First, it detects objects by using a video feed and then it uses a point cloud to publish TFs for each detected object.
+You can also provide a `point_cloud_topic` parameter, which the package will use to position the objects detected in the `image_topic` in 3D space by publishing a TF for each detected object.
 
-Object detection is done via the [dodo detector](https://github.com/douglasrizzo/dodo_detector) package. In case the single-shot detector is to be used, point the `inference_graph` and `label_map` parameters to your corresponding files. These files are created when training an object detection neural network using [TensorFlow Object Detection API](https://github.com/tensorflow/models/tree/master/research/object_detection). Also, the `ssd_confidence` parameter can be changed to adjust the detection threshold of the network.
+#### launch file examples
 
-In case the keypoint-based detector is to be used (either SIFT or RootSIFT), you need to create a database directory. The procedure to do so is described [here](https://douglasrizzo.github.io/dodo_detector/#keypoint-based-detector).
+The example below initializes a webcam feed using the *uvc_camera* package and detects objects from the `image_raw` topic:
+
+```xml
+<?xml version="1.0"?>
+<launch>
+    <node name="camera" output="screen" pkg="uvc_camera" type="uvc_camera_node"/>
+    
+    <node name="dodo_detector_ros" pkg="dodo_detector_ros" type="detector.py" output="screen">
+        <rosparam command="load" file="$(find dodo_detector_ros)/config/main_config.yaml"/>
+        <param name="image_topic" value="/image_raw" />
+    </node>
+</launch>
+```
+
+The example below initializes a Kinect using the *freenect* package and subscribes to `camera/rgb/image_color` for images and `/camera/depth/points` for the point cloud:
+
+```xml
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find freenect_launch)/launch/freenect.launch"/>
+    
+    <node name="dodo_detector_ros" pkg="dodo_detector_ros" type="detector.py" output="screen">
+        <rosparam command="load" file="$(find dodo_detector_ros)/config/main_config.yaml"/>
+        <param name="image_topic" value="/camera/rgb/image_color" />
+        <param name="point_cloud_topic" value="/camera/depth/points" />
+    </node>
+</launch>
+```
+
+This example initializes a Kinect for Xbox One, using [libfreenect2](https://github.com/OpenKinect/libfreenect2) and [iai_kinect2](https://github.com/code-iai/iai_kinect2) to connect to the device and subscribes to `/kinect2/hd/image_color` for images and `/kinect2/hd/points` for the point cloud. You can copy the launch file and use the `sd` and `qhd` topics instead of `hd` if you need more performance.
+
+```xml
+<?xml version="1.0"?>
+<launch>    
+    <include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch">
+        <param name="_depth_method" value="cpu" type="str"/>
+    </include>
+    
+    <node name="dodo_detector_ros" pkg="dodo_detector_ros" type="detector.py" output="screen">
+        <rosparam command="load" file="$(find dodo_detector_ros)/config/main_config.yaml"/>
+        <param name="image_topic" value="/kinect2/hd/image_color" />
+        <param name="point_cloud_topic" value="/kinect2/hd/points" />
+    </node>
+</launch>
+```
+
+These three launch files are provided inside the `launch` directory.

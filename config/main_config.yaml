@@ -1,12 +1,12 @@
-# ['sift', 'rootsift', 'ssd']
-detector_type: ssd
+# ['sift', 'rootsift', 'tf']
+detector_type: tf
 # path to TensorFlow Object Detection API frozen inference graph
 inference_graph: ~/.dodo_detector_ros/mscoco_frozen_inference_graph.pb
 # path to TensorFlow Object Detection API label map
 label_map: ~/.dodo_detector_ros/mscoco_label_map.pbtxt
 
 # confidence level to report objects as detected
-ssd_confidence: 0.5
+tf_confidence: 0.5
 
 # minimum number of points to consider an object as present in the scene
 sift_min_pts: 10

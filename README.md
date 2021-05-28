@@ -2,7 +2,7 @@
 
 This ROS package creates an interface with [dodo detector](https://github.com/douglasrizzo/dodo_detector), a Python package that detects objects from images.
 
-This package makes information regarding detected objects available in a topic, using a special kind of message. 
+This package makes information regarding detected objects available in a topic, using a special kind of message.
 
 When using an OpenNI-compatible sensor (like Kinect) the package uses point cloud information to locate objects in the world, wrt. to the sensor.
 
@@ -27,15 +27,15 @@ To use the package, first open the configuration file provided in `config/main_c
 - `global_frame`: the frame or tf that all object tfs will be published in relation to, eg `map`. Leave blank to publish wrt. `camera_link`.
 - `tf_prefix`: a prefix for the object tfs which will be published by the package.
 
-Then, select which type of detector the package will use by setting the `detector_type` parameter. Acceptable values are `sift`, `rootsift` or `ssd`.
+Then, select which type of detector the package will use by setting the `detector_type` parameter. Acceptable values are `sift`, `rootsift` or `tf`.
 
-`ssd` uses the [TensorFlow Object Detection API](https://github.com/tensorflow/models/tree/master/research/object_detection). It expects a label map and an inference graph. You can find these files [here](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md) or provide your own. After you have these files, configure the following parameters in `config/main_config.yaml`:
+`tf` uses version 1 of the [TensorFlow Object Detection API](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf1.md), which works with TensorFlow 1.13 up until 1.15. It expects a label map and an inference graph. You can find these files [here](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf1_detection_zoo.md) or provide your own. After you have these files, configure the following parameters in `config/main_config.yaml`:
 
 - `inference_graph`: path to the frozen inference graph (the `.pb` file).
 - `label_map`: path to the label map, (the `.pbtxt` file).
-- `ssd_confidence`: confidence level to report objects as detected by the neural network, between 0 and 1.
+- `tf_confidence`: confidence level to report objects as detected by the neural network, between 0 and 1.
 
-Take a look [here](https://douglasrizzo.github.io/dodo_detector/#convolutional-neural-network-detector-4) to understand how these parameters are used by the backend.
+Take a look [here](https://douglasrizzo.com.br/dodo_detector/#convolutional-neural-network-detector-4) to understand how these parameters are used by the backend.
 
 If `sift` or `rootsift` are chosen, a keypoint object detector will be used. The following parameters must be set in `config/main_config.yaml`:
 

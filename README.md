@@ -18,7 +18,7 @@ The package depends mainly on a Python package, also created by me, called [dodo
 
 Other ROS-related dependencies are listed on `package.xml`. If you want to use the provided `launch` files, you are going to need `uvc_camera` to start a webcam, `freenect` to access a Kinect for Xbox 360 or [libfreenect2](https://github.com/OpenKinect/libfreenect2) and [iai_kinect2](https://github.com/code-iai/iai_kinect2) to start a Kinect for Xbox One.
 
-If you use other kinds of sensor, make sure they provided an image topic and an optional point cloud topic, which will be needed later.
+If you use other kinds of sensor, make sure they provide an image topic and an optional point cloud topic, which will be needed later.
 
 ## Usage
 
@@ -27,15 +27,31 @@ To use the package, first open the configuration file provided in `config/main_c
 - `global_frame`: the frame or tf that all object tfs will be published in relation to, eg `map`. Leave blank to publish wrt. `camera_link`.
 - `tf_prefix`: a prefix for the object tfs which will be published by the package.
 
-Then, select which type of detector the package will use by setting the `detector_type` parameter. Acceptable values are `sift`, `rootsift` or `tf`.
+Then, select which type of detector the package will use by setting the `detector_type` parameter. Acceptable values are `sift`, `rootsift`, `tf1` or `tf2`.
 
-`tf` uses version 1 of the [TensorFlow Object Detection API](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf1.md), which works with TensorFlow 1.13 up until 1.15. It expects a label map and an inference graph. You can find these files [here](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf1_detection_zoo.md) or provide your own. After you have these files, configure the following parameters in `config/main_config.yaml`:
+### TensorFlow-based detectors
+
+`tf1` and `tf2` detectors use the [TensorFlow Object Detection API](https://github.com/tensorflow/models/blob/master/research/object_detection/).
+
+#### TensorFlow 1 (for Python 2.7 and ROS Melodic Morenia downwards)
+
+`tf1` uses [version 1](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf1.md) of the API, which works with TensorFlow 1.13 up until 1.15. It expects a label map and an inference graph. You can find these files [here](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf1_detection_zoo.md) or provide your own. After you have these files, configure the following parameters in `config/main_config.yaml`:
 
 - `inference_graph`: path to the frozen inference graph (the `.pb` file).
 - `label_map`: path to the label map, (the `.pbtxt` file).
 - `tf_confidence`: confidence level to report objects as detected by the neural network, between 0 and 1.
 
+#### TensorFlow 2 (for Python 3 and ROS Noetic Ninjemys upwards)
+
+`tf2` uses [version 2](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf2.md) of the API, which works with TensorFlow 2. It expects a label map and a directory with the exported model. You can find these files [here](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf2_detection_zoo.md) or provide your own. After you have these files, configure the following parameters in `config/main_config.yaml`:
+
+- `saved_model`: path to the directory with the saved model (usually exported with the name _saved_model_ by the API).
+- `label_map`: path to the label map, (the `.pbtxt` file).
+- `tf_confidence`: confidence level to report objects as detected by the neural network, between 0 and 1.
+
 Take a look [here](https://douglasrizzo.com.br/dodo_detector/#convolutional-neural-network-detector-4) to understand how these parameters are used by the backend.
+
+### OpenCV keypoint-based detectors
 
 If `sift` or `rootsift` are chosen, a keypoint object detector will be used. The following parameters must be set in `config/main_config.yaml`:
 

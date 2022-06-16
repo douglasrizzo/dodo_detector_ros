@@ -10,6 +10,19 @@ Click the image below for a YouTube video showcasing the package at work.
 
 [![Youtube video](https://img.youtube.com/vi/fXJYmJOaSxQ/0.jpg)](https://www.youtube.com/watch?v=fXJYmJOaSxQ)
 
+<!-- TOC -->
+
+- [Installation](#installation)
+- [Usage](#usage)
+    - [TensorFlow-based detectors](#tensorflow-based-detectors)
+        - [TensorFlow 1 (for Python 2.7 and ROS Melodic Morenia downwards)](#tensorflow-1-for-python-27-and-ros-melodic-morenia-downwards)
+        - [TensorFlow 2 (for Python 3 and ROS Noetic Ninjemys upwards)](#tensorflow-2-for-python-3-and-ros-noetic-ninjemys-upwards)
+    - [OpenCV keypoint-based detectors](#opencv-keypoint-based-detectors)
+    - [Start the package](#start-the-package)
+        - [launch file examples](#launch-file-examples)
+
+<!-- /TOC -->
+
 ## Installation
 
 This repo is a ROS package, so it should be put alongside your other ROS packages inside the `src` directory of your catkin workspace.

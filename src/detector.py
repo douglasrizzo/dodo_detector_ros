@@ -9,7 +9,7 @@ from os.path import expanduser
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs import point_cloud2 as pc2
 from sensor_msgs.msg import Image, PointCloud2
-from dodo_detector.detection import TFObjectDetectorV1, KeypointObjectDetector
+from dodo_detector.detection import TFObjectDetectorV1, TFObjectDetectorV2, KeypointObjectDetector
 from dodo_detector_ros.msg import DetectedObject, DetectedObjectArray
 
 
@@ -19,6 +19,7 @@ class Detector:
       #  get label map and inference graph from params
       detector_type = rospy.get_param('~detector_type')
       frozen_graph = rospy.get_param('~inference_graph', '')
+      saved_model_path = rospy.get_param('~saved_model', '')
       label_map = rospy.get_param('~label_map', '')
       confidence = rospy.get_param('~tf_confidence', 0.5)
       min_points = rospy.get_param('~sift_min_pts', 10)
@@ -34,20 +35,33 @@ class Detector:
       # to publish object tfs related to
       self._tf_listener = tf.TransformListener()
 
-      if detector_type == 'tf':
-         rospy.loginfo('Chosen detector type: TensorFlow')
-         if len(frozen_graph) == 0:
-            raise ValueError('Parameter \'frozen_graph\' must be passed')
+      if detector_type in ['tf1', 'tf2']:
+         if detector_type == 'tf2':
+            rospy.loginfo('Chosen detector type: TensorFlow 2')
+            if len(saved_model_path) == 0:
+               raise ValueError('Parameter \'saved_model\' must be passed')
+
+            saved_model_path = expanduser(saved_model_path)
+
+            self._detector = TFObjectDetectorV2(saved_model_path, label_map, confidence=confidence)
+            rospy.loginfo('Path to saved model directory: ' + saved_model_path)
+
+         if detector_type == 'tf1':
+            rospy.loginfo('Chosen detector type: TensorFlow 1')
+            if len(frozen_graph) == 0:
+               raise ValueError('Parameter \'frozen_graph\' must be passed')
+
+            frozen_graph = expanduser(frozen_graph)
+
+            self._detector = TFObjectDetectorV1(frozen_graph, label_map, confidence=confidence)
+            rospy.loginfo('Path to inference graph: ' + frozen_graph)
+
          if len(label_map) == 0:
             raise ValueError('Parameter \'label_map\' must be passed')
          if confidence <= 0 or confidence > 1:
             raise ValueError('Parameter \'confidence\' must be between 0 and 1')
 
-         frozen_graph = expanduser(frozen_graph)
          label_map = expanduser(label_map)
-
-         self._detector = TFObjectDetectorV1(frozen_graph, label_map, confidence=confidence)
-         rospy.loginfo('Path to inference graph: ' + frozen_graph)
          rospy.loginfo('Path to label map: ' + label_map)
 
          # count number of classes from label map
@@ -82,7 +96,7 @@ class Detector:
          rospy.Subscriber(point_cloud_topic, PointCloud2, self.pc_callback)
       else:
          rospy.loginfo(
-             'No point cloud information available. Objects will not be placed in the scene.')
+            'No point cloud information available. Objects will not be placed in the scene.')
 
       self._current_image = None
       self._current_pc = None
@@ -96,7 +110,7 @@ class Detector:
       if len(filters) == 0:
          rospy.loginfo('No filter configured, publishing every detected object in a single topic')
          self._publishers = {
-             None: (None, rospy.Publisher('~detected', DetectedObjectArray, queue_size=10))}
+            None: (None, rospy.Publisher('~detected', DetectedObjectArray, queue_size=10))}
 
       # else, for each filter created in the yaml config file, a new publisher is created
       else:
@@ -149,7 +163,7 @@ class Detector:
                scene = self._bridge.imgmsg_to_cv2(self._current_image, 'rgb8')
                marked_image, objects = self._detector.from_image(scene)  # detect objects
                self._imagepub.publish(self._bridge.cv2_to_imgmsg(
-                   marked_image, 'rgb8'))  # publish detection results
+                  marked_image, 'rgb8'))  # publish detection results
 
                # well create an empty msg for each publisher
                msgs = {}
@@ -166,8 +180,6 @@ class Detector:
                                     str(coordinates['box']))
 
                      ymin, xmin, ymax, xmax = coordinates['box']
-                     y_center = ymax - ((ymax - ymin) / 2)
-                     x_center = xmax - ((xmax - xmin) / 2)
 
                      detected_object = DetectedObject()
                      detected_object.type.data = obj_class
@@ -181,18 +193,20 @@ class Detector:
                      publish_tf = False
                      if self._current_pc is None:
                         rospy.loginfo(
-                            'No point cloud information available to track current object in scene')
+                           'No point cloud information available to track current object in scene')
 
                      # if there is point cloud data, we'll try to place a tf
                      # in the object's location
                      else:
+                        y_center = round(ymax - ((ymax - ymin) / 2))
+                        x_center = round(xmax - ((xmax - xmin) / 2))
                         # this function gives us a generator of points.
                         # we ask for a single point in the center of our object.
                         pc_list = list(
-                            pc2.read_points(self._current_pc,
-                                            skip_nans=True,
-                                            field_names=('x', 'y', 'z'),
-                                            uvs=[(x_center, y_center)]))
+                           pc2.read_points(self._current_pc,
+                                           skip_nans=True,
+                                           field_names=('x', 'y', 'z'),
+                                           uvs=[(x_center, y_center)]))
 
                         if len(pc_list) > 0:
                            publish_tf = True
@@ -232,7 +246,7 @@ class Detector:
                         if object_tf is not None:
                            self._tfpub.sendTransform((object_tf),
                                                      tf.transformations.quaternion_from_euler(
-                                                         0, 0, 0),
+                                                        0, 0, 0),
                                                      rospy.Time.now(),
                                                      tf_id,
                                                      frame)
